@@ -74,6 +74,25 @@ def word_to_ooo(file, output=None, server_address=None, page_count_limit=0):
     del junk
 
     if proc.returncode != 0:
-        raise Exception("Failed with stderr:\n{}".format(stderr))
+        # Check to see if the document was too big.
+        if stderr.startswith('Error (<class uno.com.sun.star.uno.Exception'):
+            # sniff X for:  Input document has X pages which exceeeds
+            #   the page count limit of Y.
+            if re.match('.*Input document has ', stderr):
+                msg = stderr[re.match('.*Input document has ', stderr).end():]
+                if len(msg) > 0:
+                    actual_page_count = msg.split(' ')[0]
+                    if actual_page_count != msg:
+
+                        raise Exception("Input word document contains {} "
+                            "pages which exceeds the page count limit of {}. "
+                            "The way forward (and best practice) is to "
+                            "divide your doccument into smaller chunks. For "
+                            "reference, the page count of an average word "
+                            "import is about 5 pages." \
+                            .format(actual_page_count, page_count_limit))
+            raise Exception("Unknown error, stderr:\n{}".format(stderr))
+        else:
+            raise Exception("Unknown error, stderr:\n{}".format(stderr))
 
     return output
