@@ -38,8 +38,10 @@ class File(FileIO):
 def word_to_ooo(file, output=None, server_address=None, page_count_limit=0):
     """MS Word document to OpenOffice.org (OOo) document.
 
-    :param file: The file object to be converted.
-    :type file: cnxtransforms.Input
+    :param file: An IO object to be converted.
+    :type file: cnxtransforms.File
+    :param output: An IO object to send the output.
+    :type output: cnxtransforms.File
     :param server_address: Host and port of running *Office server
     :type server_address: string
     :param page_count_limit: ???
@@ -48,9 +50,7 @@ def word_to_ooo(file, output=None, server_address=None, page_count_limit=0):
     :rtype: cnxtransforms.File
 
     """
-    # Quote the file name to prevent shell script expansion of any
-    #   special characters in the file name.
-    # Sending office the name of the imported word file (saved locally).
+    # Sending *office the name of the imported word file (saved locally).
     command = [OOCONVERT, file.filepath]
     if server_address:
         command.extend(['--address', server_address])
