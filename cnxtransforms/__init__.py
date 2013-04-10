@@ -10,6 +10,10 @@ import os
 import io
 import logging
 import subprocess
+import tempfile
+
+import lxml.etree
+from rhaptos.cnxmlutils import odt2cnxml
 
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -18,7 +22,7 @@ logger = logging.getLogger('cnxtransforms')
 
 
 class File(io.FileIO):
-    """file stream"""
+    """File buffer"""
     filename = None
     basepath = None
 
