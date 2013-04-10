@@ -27,6 +27,7 @@ logger = logging.getLogger('cnxtransforms')
 
 
 class Bytes(io.BytesIO):
+    """Bytes buffer"""
 
     def __init__(self, data=None, name=None):
         super(Bytes, self).__init__(data)
@@ -37,7 +38,7 @@ class Bytes(io.BytesIO):
             return "<{} instance of '{}'>".format(self.__class__.__name__,
                                                   self.name)
         else:
-            return super(Bytes, self).__repr__()
+            return super(self.__class__, self).__repr__()
 
 
 class File(io.FileIO):
@@ -78,18 +79,18 @@ class FileSequence(MutableSequence):
         return repr(self._seq)
 
     def __getitem__(self, key):
-        if not isinstance(key, int) or not isinstance(key, slice):
-            raise TypeError(type(key))
+        if not isinstance(key, (int, slice)):
+            raise TypeError(key)
         return self._seq[key]
 
     def __setitem__(self, key, value):
-        if not isinstance(key, int) or not isinstance(key, slice):
-            raise TypeError(type(key))
+        if not isinstance(key, (int, slice)):
+            raise TypeError(key)
         self._seq[key] = value
 
     def __delitem__(self, key):
-        if not isinstance(key, int) or not isinstance(key, slice):
-            raise TypeError(type(key))
+        if not isinstance(key, (int, slice)):
+            raise TypeError(key)
         del self._seq[key]
 
     def __len__(self):
