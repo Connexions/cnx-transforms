@@ -9,6 +9,7 @@ description = "Transforms used to convert content to and from " \
               "various Connexions' formats"
 
 install_requirements = [
+    'rhaptos.cnxmlutils',
     ]
 test_requirements = [
     ]

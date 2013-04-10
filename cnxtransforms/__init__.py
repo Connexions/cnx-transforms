@@ -27,6 +27,14 @@ class File(io.FileIO):
         self.filename = os.path.basename(self.name)
         self.basepath = os.path.abspath(os.path.dirname(self.name))
 
+    @classmethod
+    def from_io(cls, open_input):
+        open_input.seek(0)
+        filepointer, filepath = tempfile.mkstemp()  ##suffix=extension)
+        with open(filepath, 'wb') as f:
+            f.write(open_input.read())
+        return cls(filepath)
+
     def __repr__(self):
         return "<{} instance of '{}'>".format(self.__class__.__name__,
                                               self.filepath)
@@ -99,5 +107,30 @@ def word_to_odt(input, output=None, server_address=None, page_count_limit=0):
             raise Exception("Unknown error, stderr:\n{}".format(stderr))
         else:
             raise Exception("Unknown error, stderr:\n{}".format(stderr))
+
+    return output
+
+def odt_to_cnxml(input, output=None):
+    """OpenOffice Document Text (ODT) conversion to Connexions XML (CNXML).
+
+    :param input: An IO object to be converted.
+    :type input: cnxtransforms.File
+    :param output: An IO object to send the output.
+    :type output: io.StringIO
+    :returns: The output object used to write to output to.
+    :rtype: io.StringIO
+
+    """
+    if output is None:
+        output = io.StringIO()
+
+    file = input
+    if not isinstance(file, File):
+        file = File.from_io(input)
+
+    xml, resources, errors = odt2cnxml.transform(file.filepath)
+    output.write(unicode(lxml.etree.tostring(xml)))
+    for resource in resources:
+        raise NotImplementedError
 
     return output
