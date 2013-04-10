@@ -7,16 +7,17 @@
 # ###
 """Conversion callables"""
 import os
+import io
 import logging
 import subprocess
-from io import FileIO
+
 
 here = os.path.abspath(os.path.dirname(__file__))
 OOCONVERT = os.path.join(here, 'helper-scripts', 'ooconvert.py')
 logger = logging.getLogger('cnxtransforms')
 
 
-class File(FileIO):
+class File(io.FileIO):
     """file stream"""
     filename = None
     basepath = None
@@ -35,13 +36,13 @@ class File(FileIO):
         return os.path.join(self.basepath, self.filename)
 
 
-def word_to_ooo(file, output=None, server_address=None, page_count_limit=0):
+def word_to_odt(input, output=None, server_address=None, page_count_limit=0):
     """MS Word document to OpenOffice.org (OOo) document.
 
-    :param file: An IO object to be converted.
-    :type file: cnxtransforms.File
+    :param input: An IO object to be converted.
+    :type input: cnxtransforms.File
     :param output: An IO object to send the output.
-    :type output: cnxtransforms.File
+    :type output: io.BytesIO
     :param server_address: Host and port of running *Office server
     :type server_address: string
     :param page_count_limit: ???
@@ -50,7 +51,9 @@ def word_to_ooo(file, output=None, server_address=None, page_count_limit=0):
     :rtype: cnxtransforms.File
 
     """
-    # Sending *office the name of the imported word file (saved locally).
+    # Sending *office the name of the imported word file (saved
+    #  locally).
+    file = input
     command = [OOCONVERT, file.filepath]
     if server_address:
         command.extend(['--address', server_address])
@@ -59,19 +62,21 @@ def word_to_ooo(file, output=None, server_address=None, page_count_limit=0):
     logger.info("Invoking converter: {}".format(' '.join(command)))
 
     if output is None:
-        output = File("{}.odt".format(file.filepath), 'w')
+        output = io.BytesIO()
 
     # TODO Send the document as binary via the input pipe,
     #      like how the result is returned.
+    #      We are prevented from doing this now, because the ooconvert
+    #      script is setup to accept a file rather than stdin.
     proc = subprocess.Popen(command,
                             stdin=subprocess.PIPE,
-                            stdout=output,
+                            stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             )
     # TODO A timeout parameter was added to communicate in Python 3.3.
     #      ...communicate(timeout=seconds)
-    junk, stderr = proc.communicate()
-    del junk
+    stdout, stderr = proc.communicate(file.read())
+    output.write(stdout)
 
     if proc.returncode != 0:
         # Check to see if the document was too big.
