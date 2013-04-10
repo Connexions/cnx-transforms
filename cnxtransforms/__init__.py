@@ -176,27 +176,36 @@ def word_to_odt(input, output=None, server_address=None, page_count_limit=0):
 
     return output
 
-def odt_to_cnxml(input, output=None):
+def odt_to_cnxml(input, output=None, output_cnxml_index=0):
     """OpenOffice Document Text (ODT) conversion to Connexions XML (CNXML).
 
     :param input: An IO object to be converted.
-    :type input: cnxtransforms.File
-    :param output: An IO object to send the output.
-    :type output: io.StringIO
-    :returns: The output object used to write to output to.
-    :rtype: io.StringIO
+    :type input: io.Bytes or cnxtransforms.File
+    :param output: A sequence that has io capable elements
+    :type output: cnxtransforms.FileSequence
+    :returns: A sequence that has io capable elements
+    :rtype: cnxtransforms.FileSequence
 
     """
-    if output is None:
-        output = io.StringIO()
-
+    # The rhaptos.cnxmlutils.odt2cnxml.transform function requires a
+    #   file, so we make the input a file before moving forward.
     file = input
     if not isinstance(file, File):
-        file = File.from_io(input)
+        file = File.from_io(file)
+
+    if output is not None and output[output_cnxml_index] is None:
+        cnxml = io.StringIO()
+        output.append(cnxml)
+        output_cnxml_index = output.index(cnxml)
+    elif output is not None:
+        cnxml = output[output_cnxml_index]
+    else:
+        cnxml = io.StringIO()
+        output = FileSequence((cnxml,))
 
     xml, resources, errors = odt2cnxml.transform(file.filepath)
-    output.write(unicode(lxml.etree.tostring(xml)))
-    for resource in resources:
-        raise NotImplementedError
+    cnxml.write(unicode(lxml.etree.tostring(xml)))
+    for name, data in resources.iteritems():
+        output.append(Bytes(data, name=name))
 
     return output
