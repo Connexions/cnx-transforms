@@ -11,6 +11,11 @@ import io
 import logging
 import subprocess
 import tempfile
+try:
+    from collections.abc import MutableSequence
+except ImportError:
+    # Pre Python 3.3
+    from collections import MutableSequence
 
 import lxml.etree
 from rhaptos.cnxmlutils import odt2cnxml
@@ -19,6 +24,20 @@ from rhaptos.cnxmlutils import odt2cnxml
 here = os.path.abspath(os.path.dirname(__file__))
 OOCONVERT = os.path.join(here, 'helper-scripts', 'ooconvert.py')
 logger = logging.getLogger('cnxtransforms')
+
+
+class Bytes(io.BytesIO):
+
+    def __init__(self, data=None, name=None):
+        super(Bytes, self).__init__(data)
+        self.name = name
+
+    def __repr__(self):
+        if self.name is not None:
+            return "<{} instance of '{}'>".format(self.__class__.__name__,
+                                                  self.name)
+        else:
+            return super(Bytes, self).__repr__()
 
 
 class File(io.FileIO):
@@ -46,6 +65,46 @@ class File(io.FileIO):
     @property
     def filepath(self):
         return os.path.join(self.basepath, self.filename)
+
+
+class FileSequence(MutableSequence):
+    """Sequence of File buffers"""
+
+    def __init__(self, file_sequence=()):
+        """Can be initialized with a sequence of File objects."""
+        self._seq = list(file_sequence)
+
+    def __repr__(self):
+        return repr(self._seq)
+
+    def __getitem__(self, key):
+        if not isinstance(key, int) or not isinstance(key, slice):
+            raise TypeError(type(key))
+        return self._seq[key]
+
+    def __setitem__(self, key, value):
+        if not isinstance(key, int) or not isinstance(key, slice):
+            raise TypeError(type(key))
+        self._seq[key] = value
+
+    def __delitem__(self, key):
+        if not isinstance(key, int) or not isinstance(key, slice):
+            raise TypeError(type(key))
+        del self._seq[key]
+
+    def __len__(self):
+        return len(self._seq)
+
+    def insert(self, index, value):
+        self._seq.insert(index, value)
+
+    def __next__(self):
+        for v in self.seq:
+            yield v
+        raise StopIteration
+
+    def __contains__(self, item):
+        return item in self._seq
 
 
 def word_to_odt(input, output=None, server_address=None, page_count_limit=0):
