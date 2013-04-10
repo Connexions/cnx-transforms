@@ -86,6 +86,9 @@ def word_to_odt(input, output=None, server_address=None, page_count_limit=0):
     stdout, stderr = proc.communicate(file.read())
     output.write(stdout)
 
+    if output.tell() == 0:
+        logger.warning("*Office did returned nothing. "
+                       "The *Office server may not be running.")
     if proc.returncode != 0:
         # Check to see if the document was too big.
         if stderr.startswith('Error (<class uno.com.sun.star.uno.Exception'):
