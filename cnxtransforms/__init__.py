@@ -26,6 +26,21 @@ OOCONVERT = os.path.join(here, 'helper-scripts', 'ooconvert.py')
 logger = logging.getLogger('cnxtransforms')
 
 
+class String(io.StringIO):
+    """String buffer"""
+
+    def __init__(self, data=None, name=None):
+        super(String, self).__init__(data)
+        self.name = name
+
+    def __repr__(self):
+        if self.name is not None:
+            return "<{} instance of '{}'>".format(self.__class__.__name__,
+                                                  self.name)
+        else:
+            return super(self.__class__, self).__repr__()
+
+
 class Bytes(io.BytesIO):
     """Bytes buffer"""
 
@@ -194,15 +209,20 @@ def odt_to_cnxml(input, output=None, output_cnxml_index=0):
     if not isinstance(file, File):
         file = File.from_io(file)
 
-    if output is not None and output[output_cnxml_index] is None:
-        cnxml = io.StringIO()
-        output.append(cnxml)
-        output_cnxml_index = output.index(cnxml)
-    elif output is not None:
-        cnxml = output[output_cnxml_index]
-    else:
-        cnxml = io.StringIO()
+    make_blank_cnxml_obj = lambda: String(name='index.cnxml')
+    if output is None:
+        cnxml = make_blank_cnxml_obj()
         output = FileSequence((cnxml,))
+        output_cnxml_index = output.index(cnxml)
+    else:
+        try:
+            cnxml = output[output_cnxml_index]
+        except IndexError:
+            logger.warning("Couldn't find the specified output object "
+                           "defined. Creating one and moving forward.")
+            cnxml = make_blank_cnxml_obj()
+            output.append(cnxml)
+            output_cnxml_index = output.index(cnxml)
 
     xml, resources, errors = odt2cnxml.transform(file.filepath)
     cnxml.write(unicode(lxml.etree.tostring(xml)))
