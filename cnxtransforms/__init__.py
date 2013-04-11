@@ -275,5 +275,6 @@ def to_zipfile(input, output=None):
             # FIXME Need to make the name (or path) relative to the other
             #       contents for linking purposes.
             zip_info = zipfile.ZipInfo(buf.name)
+            zip_info.external_attr = 0755 << 16L
             zip_file.writestr(zip_info, buf.getvalue())
     return output
