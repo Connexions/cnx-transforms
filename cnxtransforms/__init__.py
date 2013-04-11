@@ -145,6 +145,8 @@ def word_to_odt(input, output=None, server_address=None, page_count_limit=0):
     # Sending *office the name of the imported word file (saved
     #  locally).
     file = input
+    if not isinstance(file, File):
+        file = File.from_io(file)
     command = [OOCONVERT, file.filepath]
     if server_address:
         command.extend(['--address', server_address])
