@@ -217,6 +217,9 @@ def odt_to_cnxml(input, output=None, output_cnxml_index=0):
         cnxml = make_blank_cnxml_obj()
         output = FileSequence((cnxml,))
         output_cnxml_index = output.index(cnxml)
+    elif not isinstance(output, FileSequence):
+        raise TypeError("Output must be a FileSequence. '{}' of type "
+                        "'{}' was given".format(output, type(output)))
     else:
         try:
             cnxml = output[output_cnxml_index]
