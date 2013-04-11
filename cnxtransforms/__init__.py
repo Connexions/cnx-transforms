@@ -68,7 +68,10 @@ class File(io.FileIO):
 
     @classmethod
     def from_io(cls, open_input):
-        open_input.seek(0)
+        try:
+            open_input.seek(0)
+        except IOError:  # Caused by reading from sys.stdin
+            pass
         filepointer, filepath = tempfile.mkstemp()  ##suffix=extension)
         with open(filepath, 'wb') as f:
             f.write(open_input.read())
