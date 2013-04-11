@@ -30,6 +30,16 @@ def init_parser(parser=None):
                         help="destination file to write the output")
     return parser
 
+def word2soffice(args=None, parser=None):
+    parser = init_parser(parser)
+    parser.add_argument('--server-address', default='localhost:2002',
+                        help="host and port to the headless *office")
+    args = parser.parse_args(args)
+
+    # And now the body of work...
+    cnxtransforms.word_to_odt(args.source, output=args.destination)
+    return 0
+
 def soffice2cnxml(args=None, parser=None):
     """*office to CNXML
     Input an office document (e.g. docx, odt). The output will be a zip that
