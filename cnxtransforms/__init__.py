@@ -11,6 +11,11 @@ import io
 import logging
 import subprocess
 import tempfile
+try:
+    from collections.abc import MutableSequence
+except ImportError:
+    # Pre Python 3.3
+    from collections import MutableSequence
 
 import lxml.etree
 from rhaptos.cnxmlutils import odt2cnxml
@@ -19,6 +24,36 @@ from rhaptos.cnxmlutils import odt2cnxml
 here = os.path.abspath(os.path.dirname(__file__))
 OOCONVERT = os.path.join(here, 'helper-scripts', 'ooconvert.py')
 logger = logging.getLogger('cnxtransforms')
+
+
+class String(io.StringIO):
+    """String buffer"""
+
+    def __init__(self, data=None, name=None):
+        super(String, self).__init__(data)
+        self.name = name
+
+    def __repr__(self):
+        if self.name is not None:
+            return "<{} instance of '{}'>".format(self.__class__.__name__,
+                                                  self.name)
+        else:
+            return super(self.__class__, self).__repr__()
+
+
+class Bytes(io.BytesIO):
+    """Bytes buffer"""
+
+    def __init__(self, data=None, name=None):
+        super(Bytes, self).__init__(data)
+        self.name = name
+
+    def __repr__(self):
+        if self.name is not None:
+            return "<{} instance of '{}'>".format(self.__class__.__name__,
+                                                  self.name)
+        else:
+            return super(self.__class__, self).__repr__()
 
 
 class File(io.FileIO):
@@ -33,7 +68,10 @@ class File(io.FileIO):
 
     @classmethod
     def from_io(cls, open_input):
-        open_input.seek(0)
+        try:
+            open_input.seek(0)
+        except IOError:  # Caused by reading from sys.stdin
+            pass
         filepointer, filepath = tempfile.mkstemp()  ##suffix=extension)
         with open(filepath, 'wb') as f:
             f.write(open_input.read())
@@ -46,6 +84,46 @@ class File(io.FileIO):
     @property
     def filepath(self):
         return os.path.join(self.basepath, self.filename)
+
+
+class FileSequence(MutableSequence):
+    """Sequence of File buffers"""
+
+    def __init__(self, file_sequence=()):
+        """Can be initialized with a sequence of File objects."""
+        self._seq = list(file_sequence)
+
+    def __repr__(self):
+        return repr(self._seq)
+
+    def __getitem__(self, key):
+        if not isinstance(key, (int, slice)):
+            raise TypeError(key)
+        return self._seq[key]
+
+    def __setitem__(self, key, value):
+        if not isinstance(key, (int, slice)):
+            raise TypeError(key)
+        self._seq[key] = value
+
+    def __delitem__(self, key):
+        if not isinstance(key, (int, slice)):
+            raise TypeError(key)
+        del self._seq[key]
+
+    def __len__(self):
+        return len(self._seq)
+
+    def insert(self, index, value):
+        self._seq.insert(index, value)
+
+    def __next__(self):
+        for v in self.seq:
+            yield v
+        raise StopIteration
+
+    def __contains__(self, item):
+        return item in self._seq
 
 
 def word_to_odt(input, output=None, server_address=None, page_count_limit=0):
@@ -117,27 +195,44 @@ def word_to_odt(input, output=None, server_address=None, page_count_limit=0):
 
     return output
 
-def odt_to_cnxml(input, output=None):
+def odt_to_cnxml(input, output=None, output_cnxml_index=0):
     """OpenOffice Document Text (ODT) conversion to Connexions XML (CNXML).
 
     :param input: An IO object to be converted.
-    :type input: cnxtransforms.File
-    :param output: An IO object to send the output.
-    :type output: io.StringIO
-    :returns: The output object used to write to output to.
-    :rtype: io.StringIO
+    :type input: io.Bytes or cnxtransforms.File
+    :param output: A sequence that has io capable elements
+    :type output: cnxtransforms.FileSequence
+    :returns: A sequence that has io capable elements
+    :rtype: cnxtransforms.FileSequence
 
     """
-    if output is None:
-        output = io.StringIO()
-
+    # The rhaptos.cnxmlutils.odt2cnxml.transform function requires a
+    #   file, so we make the input a file before moving forward.
     file = input
     if not isinstance(file, File):
-        file = File.from_io(input)
+        file = File.from_io(file)
+
+    make_blank_cnxml_obj = lambda: String(name='index.cnxml')
+    if output is None:
+        cnxml = make_blank_cnxml_obj()
+        output = FileSequence((cnxml,))
+        output_cnxml_index = output.index(cnxml)
+    elif not isinstance(output, FileSequence):
+        raise TypeError("Output must be a FileSequence. '{}' of type "
+                        "'{}' was given".format(output, type(output)))
+    else:
+        try:
+            cnxml = output[output_cnxml_index]
+        except IndexError:
+            logger.warning("Couldn't find the specified output object "
+                           "defined. Creating one and moving forward.")
+            cnxml = make_blank_cnxml_obj()
+            output.append(cnxml)
+            output_cnxml_index = output.index(cnxml)
 
     xml, resources, errors = odt2cnxml.transform(file.filepath)
-    output.write(unicode(lxml.etree.tostring(xml)))
-    for resource in resources:
-        raise NotImplementedError
+    cnxml.write(unicode(lxml.etree.tostring(xml)))
+    for name, data in resources.iteritems():
+        output.append(Bytes(data, name=name))
 
     return output
