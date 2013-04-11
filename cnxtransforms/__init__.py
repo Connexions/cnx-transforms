@@ -11,6 +11,7 @@ import io
 import logging
 import subprocess
 import tempfile
+import zipfile
 try:
     from collections.abc import MutableSequence
 except ImportError:
@@ -235,4 +236,41 @@ def odt_to_cnxml(input, output=None, output_cnxml_index=0):
     for name, data in resources.iteritems():
         output.append(Bytes(data, name=name))
 
+    return output
+
+def to_zipfile(input, output=None):
+    """Take the input and zip it up! If you want a file writen, output must
+    be an open file-like object.
+
+    :param input: A cnxtransforms IO object
+    :type input: cnxtransform.{String, Bytes, File} or
+                 cnxtransforms.FileSequence
+    :param output: An io object
+    :type output: any io-like object
+
+    :returns: A IO object containing zip data
+    :rtype: io.BytesIO
+
+    """
+    if output is None:
+        output = io.BytesIO
+
+    allowed_io_types = (str, bytes, io.IOBase)
+    allowed_container_types = (list, tuple, set, FileSequence)
+    if isinstance(input, allowed_io_types):
+        # Make it something we can iterate over.
+        input = (input,)
+    elif not isinstance(input, allowed_container_types):
+        raise TypeError("Can't process the input object '{}' of type '{}'." \
+                        .format(repr(input), type(input)))
+    # else, we're good. :)
+
+    # Note: It's not documented, but you can give a zipfile.ZipFile
+    #       instance an open io-like object.
+    with zipfile.ZipFile(output, 'w') as zip_file:
+        for buf in input:
+            # FIXME Need to make the name (or path) relative to the other
+            #       contents for linking purposes.
+            zip_info = zipfile.ZipInfo(buf.name)
+            zip_file.writestr(zip_info, buf.getvalue())
     return output
