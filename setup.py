@@ -31,5 +31,7 @@ setup(
         },
     entry_points = """\
     [console_scripts]
+    soffice2cnxml = cnxtransforms.cli:soffice2cnxml
+    word2soffice = cnxtransforms.cli:word2soffice
     """,
     )
