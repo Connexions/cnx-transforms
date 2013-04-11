@@ -7,6 +7,7 @@
 # ###
 """Conversion callables"""
 import os
+import sys
 import io
 import logging
 import subprocess
@@ -171,7 +172,7 @@ def word_to_odt(input, output=None, server_address=None, page_count_limit=0):
     stdout, stderr = proc.communicate(file.read())
     output.write(stdout)
 
-    if output.tell() == 0:
+    if output is not sys.stdout and output.tell() == 0:
         logger.warning("*Office did returned nothing. "
                        "The *Office server may not be running.")
     if proc.returncode != 0:
