@@ -199,13 +199,19 @@ def word_to_odt(input, output=None, server_address=None, page_count_limit=0):
 
     return output
 
-def odt_to_cnxml(input, output=None, output_cnxml_index=0):
+def odt_to_cnxml(input, output=None, cnxml_index=0, ):
     """OpenOffice Document Text (ODT) conversion to Connexions XML (CNXML).
 
     :param input: An IO object to be converted.
     :type input: io.Bytes or cnxtransforms.File
     :param output: A sequence that has io capable elements
     :type output: cnxtransforms.FileSequence
+
+    :param cnxml_index: index value of the cnxml.index document in the output
+                        if the a designated output has been selected in the
+                        sequence, defaults to 0
+    :type cnxml_index: int
+
     :returns: A sequence that has io capable elements
     :rtype: cnxtransforms.FileSequence
 
@@ -220,19 +226,19 @@ def odt_to_cnxml(input, output=None, output_cnxml_index=0):
     if output is None:
         cnxml = make_blank_cnxml_obj()
         output = FileSequence((cnxml,))
-        output_cnxml_index = output.index(cnxml)
+        cnxml_index = output.index(cnxml)
     elif not isinstance(output, FileSequence):
         raise TypeError("Output must be a FileSequence. '{}' of type "
                         "'{}' was given".format(output, type(output)))
     else:
         try:
-            cnxml = output[output_cnxml_index]
+            cnxml = output[cnxml_index]
         except IndexError:
             logger.warning("Couldn't find the specified output object "
                            "defined. Creating one and moving forward.")
             cnxml = make_blank_cnxml_obj()
             output.append(cnxml)
-            output_cnxml_index = output.index(cnxml)
+            cnxml_index = output.index(cnxml)
 
     xml, resources, errors = odt2cnxml.transform(file.filepath)
     cnxml.write(unicode(lxml.etree.tostring(xml)))
