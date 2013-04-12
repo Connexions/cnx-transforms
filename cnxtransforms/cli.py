@@ -32,7 +32,7 @@ def init_parser(parser=None):
 
 def word2soffice(args=None, parser=None):
     parser = init_parser(parser)
-    parser.add_argument('--server-address', default='localhost:2002',
+    parser.add_argument('--server-address',
                         help="host and port to the headless *office")
     args = parser.parse_args(args)
 
