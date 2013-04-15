@@ -272,9 +272,11 @@ def cnxml_to_html(input, output=None, cnxml_index=0, html_index=0):
 
     """
     # Handle multiple input formats
-    if isinstance(input, io.IOBase):
+    if isinstance(input, file):
+        cnxml = File.from_io(input)
+    elif isinstance(input, io.IOBase):
         cnxml = input
-    elif instance(input, FileSequence):
+    elif isinstance(input, FileSequence):
         cnxml = input[cnxml_index]
     else:
         raise TypeError("Input must be an IO or FileSequence object. '{}' "
