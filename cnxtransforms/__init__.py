@@ -7,10 +7,12 @@
 # ###
 """Conversion callables"""
 import os
+import sys
 import io
 import logging
 import subprocess
 import tempfile
+import zipfile
 try:
     from collections.abc import MutableSequence
 except ImportError:
@@ -144,6 +146,8 @@ def word_to_odt(input, output=None, server_address=None, page_count_limit=0):
     # Sending *office the name of the imported word file (saved
     #  locally).
     file = input
+    if not isinstance(file, File):
+        file = File.from_io(file)
     command = [OOCONVERT, file.filepath]
     if server_address:
         command.extend(['--address', server_address])
@@ -168,7 +172,7 @@ def word_to_odt(input, output=None, server_address=None, page_count_limit=0):
     stdout, stderr = proc.communicate(file.read())
     output.write(stdout)
 
-    if output.tell() == 0:
+    if output is not sys.stdout and output.tell() == 0:
         logger.warning("*Office did returned nothing. "
                        "The *Office server may not be running.")
     if proc.returncode != 0:
@@ -195,13 +199,19 @@ def word_to_odt(input, output=None, server_address=None, page_count_limit=0):
 
     return output
 
-def odt_to_cnxml(input, output=None, output_cnxml_index=0):
+def odt_to_cnxml(input, output=None, cnxml_index=0, ):
     """OpenOffice Document Text (ODT) conversion to Connexions XML (CNXML).
 
     :param input: An IO object to be converted.
     :type input: io.Bytes or cnxtransforms.File
     :param output: A sequence that has io capable elements
     :type output: cnxtransforms.FileSequence
+
+    :param cnxml_index: index value of the cnxml.index document in the output
+                        if the a designated output has been selected in the
+                        sequence, defaults to 0
+    :type cnxml_index: int
+
     :returns: A sequence that has io capable elements
     :rtype: cnxtransforms.FileSequence
 
@@ -216,23 +226,61 @@ def odt_to_cnxml(input, output=None, output_cnxml_index=0):
     if output is None:
         cnxml = make_blank_cnxml_obj()
         output = FileSequence((cnxml,))
-        output_cnxml_index = output.index(cnxml)
+        cnxml_index = output.index(cnxml)
     elif not isinstance(output, FileSequence):
         raise TypeError("Output must be a FileSequence. '{}' of type "
                         "'{}' was given".format(output, type(output)))
     else:
         try:
-            cnxml = output[output_cnxml_index]
+            cnxml = output[cnxml_index]
         except IndexError:
             logger.warning("Couldn't find the specified output object "
                            "defined. Creating one and moving forward.")
             cnxml = make_blank_cnxml_obj()
             output.append(cnxml)
-            output_cnxml_index = output.index(cnxml)
+            cnxml_index = output.index(cnxml)
 
     xml, resources, errors = odt2cnxml.transform(file.filepath)
     cnxml.write(unicode(lxml.etree.tostring(xml)))
     for name, data in resources.iteritems():
         output.append(Bytes(data, name=name))
 
+    return output
+
+def to_zipfile(input, output=None):
+    """Take the input and zip it up! If you want a file writen, output must
+    be an open file-like object.
+
+    :param input: A cnxtransforms IO object
+    :type input: cnxtransform.{String, Bytes, File} or
+                 cnxtransforms.FileSequence
+    :param output: An io object
+    :type output: any io-like object
+
+    :returns: A IO object containing zip data
+    :rtype: io.BytesIO
+
+    """
+    if output is None:
+        output = io.BytesIO
+
+    allowed_io_types = (str, bytes, io.IOBase)
+    allowed_container_types = (list, tuple, set, FileSequence)
+    if isinstance(input, allowed_io_types):
+        # Make it something we can iterate over.
+        input = (input,)
+    elif not isinstance(input, allowed_container_types):
+        raise TypeError("Can't process the input object '{}' of type '{}'." \
+                        .format(repr(input), type(input)))
+    # else, we're good. :)
+
+    # Note: It's not documented, but you can give a zipfile.ZipFile
+    #       instance an open io-like object.
+    with zipfile.ZipFile(output, 'w') as zip_file:
+        for buf in input:
+            # FIXME Need to make the name (or path) relative to the other
+            #       contents for linking purposes.
+            zip_info = zipfile.ZipInfo(buf.name)
+            zip_info.external_attr = 0755 << 16L
+            zip_file.writestr(zip_info, buf.getvalue())
     return output
