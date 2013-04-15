@@ -20,7 +20,8 @@ except ImportError:
     from collections import MutableSequence
 
 import lxml.etree
-from rhaptos.cnxmlutils import odt2cnxml
+import rhaptos.cnxmlutils
+import rhaptos.cnxmlutils.utils
 
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -207,7 +208,7 @@ def odt_to_cnxml(input, output=None, cnxml_index=0, ):
     :param output: A sequence that has io capable elements
     :type output: cnxtransforms.FileSequence
 
-    :param cnxml_index: index value of the cnxml.index document in the output
+    :param cnxml_index: index value of the index.cnxml document in the output
                         if the a designated output has been selected in the
                         sequence, defaults to 0
     :type cnxml_index: int
@@ -240,10 +241,67 @@ def odt_to_cnxml(input, output=None, cnxml_index=0, ):
             output.append(cnxml)
             cnxml_index = output.index(cnxml)
 
-    xml, resources, errors = odt2cnxml.transform(file.filepath)
+    transform = rhaptos.cnxmlutils.odt2cnxml.transform
+    xml, resources, errors = transform(file.filepath)
     cnxml.write(unicode(lxml.etree.tostring(xml)))
     for name, data in resources.iteritems():
         output.append(Bytes(data, name=name))
+
+    return output
+
+def cnxml_to_html(input, output=None, cnxml_index=0, html_index=0):
+    """Connexions XML (CNXML) conversion to HTML5.
+
+    :param input: An io-like object or sequence containing io elements
+    :type input: io.IOBase, cnxtransforms.String, cnxtransforms.File
+                 or cnxtransforms.FileSequence
+    :param output: A sequence that has io capable elements
+    :type output: cnxtransforms.FileSequence
+
+    :param cnxml_index: index value of the index.cnxml document in the input
+                        if the a designated input has been selected in the
+                        sequence, defaults to 0
+    :type cnxml_index: int
+    :param html_index: index value of the index.html document in the output
+                       if the designated output has been slected in the
+                       sequence, defaults to 0
+    :type html_index: int
+
+    :returns: A sequence that has io capable elements
+    :rtype: cnxtransforms.FileSequence
+
+    """
+    # Handle multiple input formats
+    if isinstance(input, io.IOBase):
+        cnxml = input
+    elif instance(input, FileSequence):
+        cnxml = input[cnxml_index]
+    else:
+        raise TypeError("Input must be an IO or FileSequence object. '{}' "
+                        "of type '{}' was given".format(input, type(input)))
+
+    # Handle the output.
+    make_blank_html_obj = lambda: String(name='index.html')
+    if output is None:
+        html = make_blank_html_obj()
+        output = FileSequence((html,))
+        html_index = output.index(html)
+    elif not isinstance(output, FileSequence):
+        raise TypeError("Output must be a FileSequence. '{}' of type "
+                        "'{}' was given".format(output, type(output)))
+    else:
+        try:
+            html = output[html_index]
+        except IndexError:
+            logger.warning("Couldn't find the specified output object "
+                           "defined. Creating one and moving forward.")
+            html = make_blank_html_obj()
+            output.append(html)
+            html_index = output.index(html)
+
+    # Do the conversion
+    xml = rhaptos.cnxmlutils.utils.cnxml_to_html(cnxml.read())
+    html.write(unicode(xml))
 
     return output
 
