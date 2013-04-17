@@ -19,6 +19,7 @@ except ImportError:
     # Pre Python 3.3
     from collections import MutableSequence
 
+import magic
 import lxml.etree
 import rhaptos.cnxmlutils
 import rhaptos.cnxmlutils.utils
@@ -27,6 +28,35 @@ import rhaptos.cnxmlutils.utils
 here = os.path.abspath(os.path.dirname(__file__))
 OOCONVERT = os.path.join(here, 'helper-scripts', 'ooconvert.py')
 logger = logging.getLogger('cnxtransforms')
+
+
+# magic.Magic instances for specific mime-type and mime-encoding
+#   discovery. This is necessary because the mime-type and
+#   mime-encoding appear to be mutually exclusive in use.
+_mime_type_magic = None
+_mime_encoding_magic = None
+
+def guess_mime_type(buf):
+    """Like mimetypes.guess_type but accepts a buffer instead of a filepath.
+
+    """
+    global _mime_type_magic
+    if _mime_type_magic is None:
+        _mime_type_magic = magic.Magic(mime=True)
+    try:
+        return _mime_type_magic.from_buffer(buf.read())
+    except AttributeError:
+        return _mime_type_magic.from_buffer(buf)
+
+def guess_mime_encoding(buf):
+    """Guesses the encoding type for the given buffer."""
+    global _mime_encoding_magic
+    if _mime_encoding_magic is None:
+        _mime_encoding_magic = magic.Magic(mime_encoding=True)
+    try:
+        return _mime_encoding_magic.from_buffer(buf.read())
+    except AttributeError:
+        return _mime_encoding_magic.from_buffer(buf)
 
 
 class String(io.StringIO):

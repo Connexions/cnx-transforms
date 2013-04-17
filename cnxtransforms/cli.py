@@ -54,14 +54,6 @@ def soffice2cnxml(args=None, parser=None):
     cnxtransforms.to_zipfile(content, output=args.destination)
     return 0
 
-def _guess_type(buf):
-    """Like mimetypes.guess_type but accepts a buffer instead of a filepath.
-
-    """
-    import magic
-    magick = magic.Magic(mime=True)
-    return magick.from_buffer(buf.read(1024))
-
 def cnxml2html(args=None, parser=None):
     """CNXML to HTML
     XXX Zip input is incomplete
@@ -80,7 +72,7 @@ def cnxml2html(args=None, parser=None):
     input = args.source
     if getattr(args.source, 'name') == '<stdin>':
         input = cnxtransforms.File.from_io(args.source)
-    input_mime_type = _guess_type(input)
+    input_mime_type = cnxtransforms.guess_mime_type(input)
     # Rewind, because the _guess_type function reads into the input.
     input.seek(0)
     if input_mime_type == 'application/zip':
