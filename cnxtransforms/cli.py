@@ -8,6 +8,7 @@
 """Transformations commandline interface (CLI)"""
 import sys
 import argparse
+import zipfile
 
 import cnxtransforms
 from cnxtransforms import logger
@@ -75,10 +76,10 @@ def cnxml2html(args=None, parser=None):
     input_mime_type = cnxtransforms.guess_mime_type(input)
     # Rewind, because the _guess_type function reads into the input.
     input.seek(0)
+    is_single_file = False
     if input_mime_type == 'application/zip':
-        is_single_file = False
-        ##input = FileSequence.from_zipfile(input)
-        raise NotImplementedError
+        input = zipfile.ZipFile(input)
+        input = cnxtransforms.FileSequence.from_zipfile(input)
     else:
         is_single_file = True
 

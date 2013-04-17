@@ -89,6 +89,21 @@ class Bytes(io.BytesIO):
             return super(self.__class__, self).__repr__()
 
 
+def make_buffer(data, name):
+    """Using the provided IO object, determine it's encoding to then create
+    the buffer that corresponds with its encoding type.
+
+    """
+    encoding = guess_mime_encoding(data)
+    if encoding == 'binary':
+        buf = Bytes(data, name)
+    else:
+        if isinstance(data, str):
+            data = unicode(data)
+        buf = String(data, name)
+    return buf
+
+
 class File(io.FileIO):
     """File buffer"""
     filename = None
@@ -128,6 +143,29 @@ class FileSequence(MutableSequence):
 
     def __repr__(self):
         return repr(self._seq)
+
+    @classmethod
+    def from_zipfile(cls, zfile):
+        """Given a ``zipfile.ZipFile`` as ``file`` produce a
+        FileSequence instance.
+
+        :param file: A zipfile
+        :type file: zipfile.ZipFile
+
+        """
+        file_sequence = cls()
+        for zinfo in zfile.infolist():
+            # FIXME This is horrible, but nothing can be done about it
+            #       because the zipfile implementation is lacking. In
+            #       order to fix this raw data toss around bit,
+            #       we'd need to redesign the zipfile library. =/
+            buf = make_buffer(zfile.read(zinfo), zinfo.filename)
+            file_sequence.append(buf)
+        return file_sequence
+
+    ###
+    # MutableSequence abstraction methods
+    ###
 
     def __getitem__(self, key):
         if not isinstance(key, (int, slice)):
@@ -330,6 +368,7 @@ def cnxml_to_html(input, output=None, cnxml_index=0, html_index=0):
             html = make_blank_html_obj()
             output.append(html)
             html_index = output.index(html)
+    [output.append(b) for b in input if b is not cnxml]
 
     # Do the conversion
     xml = rhaptos.cnxmlutils.utils.cnxml_to_html(cnxml.read())
