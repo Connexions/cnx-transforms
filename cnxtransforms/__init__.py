@@ -9,7 +9,6 @@
 import os
 import sys
 import io
-import logging
 import subprocess
 import tempfile
 import zipfile
@@ -22,10 +21,11 @@ except ImportError:
 import lxml.etree
 from rhaptos.cnxmlutils import odt2cnxml
 
+from .reporting import logger
+
 
 here = os.path.abspath(os.path.dirname(__file__))
 OOCONVERT = os.path.join(here, 'helper-scripts', 'ooconvert.py')
-logger = logging.getLogger('cnxtransforms')
 
 
 class String(io.StringIO):
