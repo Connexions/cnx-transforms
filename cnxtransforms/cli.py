@@ -10,6 +10,10 @@ import sys
 import argparse
 
 import cnxtransforms
+from cnxtransforms.reporting import make_logger
+
+
+logger = make_logger('cnxtransforms.cli')
 
 
 def init_parser(parser=None):
