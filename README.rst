@@ -1,7 +1,9 @@
 Connexions Transforms
 =====================
 
-Transforms used to convert content to and from various Connexions' formats.
+Transforms used to convert content to and from various Connexions'
+formats. This package is designed as a library, but does contain
+scripts used to call into the library functionality.
 
 This is built to work with Python 2.7.
 

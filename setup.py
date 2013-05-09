@@ -10,6 +10,7 @@ description = "Transforms used to convert content to and from " \
 
 install_requirements = [
     'rhaptos.cnxmlutils',
+    'python-magic',
     ]
 test_requirements = [
     ]
@@ -33,5 +34,6 @@ setup(
     [console_scripts]
     soffice2cnxml = cnxtransforms.cli:soffice2cnxml
     word2soffice = cnxtransforms.cli:word2soffice
+    cnxml2html = cnxtransforms.cli:cnxml2html
     """,
     )
