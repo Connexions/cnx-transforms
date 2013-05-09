@@ -173,7 +173,7 @@ def word_to_odt(input, output=None, server_address=None, page_count_limit=0):
     output.write(stdout)
 
     if output is not sys.stdout and output.tell() == 0:
-        logger.warning("*Office did returned nothing. "
+        logger.warning("*Office returned nothing. "
                        "The *Office server may not be running.")
     if proc.returncode != 0:
         # Check to see if the document was too big.
@@ -199,7 +199,7 @@ def word_to_odt(input, output=None, server_address=None, page_count_limit=0):
 
     return output
 
-def odt_to_cnxml(input, output=None, cnxml_index=0, ):
+def odt_to_cnxml(input, output=None, cnxml_index=0):
     """OpenOffice Document Text (ODT) conversion to Connexions XML (CNXML).
 
     :param input: An IO object to be converted.
