@@ -1,19 +1,34 @@
-Connexions Transforms
-=====================
+CNX Transforms
+==============
 
-Transforms used to convert content to and from various Connexions'
-formats. This package is designed as a library, but does contain
-scripts used to call into the library functionality.
+Functions used to transform CNX content export formats.
+This package is a set of functions that create very specific output.
 
-This is built to work with Python 2.7.
+The design of this package's functions is suppose to adhere to
+a common interface. All functions accept an ``cnx-epub`` compatible
+EPUB file and output one or more artifacts.
+
 
 Getting Started
 ---------------
 
+Install using one of the following methods (run within the project root)::
+
+    python setup.py install
+
+Or::
+
+    pip install .
+
+Testing
+-------
+
+.. image:: https://travis-ci.org/Connexions/cnx-transforms.svg
+   :target: https://travis-ci.org/Connexions/cnx-transforms
+
 ::
 
-    cd <directory containing this file>
-    $venv/bin/python setup.py develop
+    python setup.py test
 
 License
 -------

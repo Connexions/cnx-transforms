@@ -1,39 +1,39 @@
 # -*- coding: utf-8 -*-
-import os
+import sys
 from setuptools import setup, find_packages
 
-here = os.path.abspath(os.path.dirname(__file__))
-README = os.path.join(here, 'README.rst')
 
-description = "Transforms used to convert content to and from " \
-              "various Connexions' formats"
+IS_PY3 = sys.version_info > (3,)
 
-install_requirements = [
-    'rhaptos.cnxmlutils',
-    'python-magic',
+install_requires = (
+    )
+tests_require = [
     ]
-test_requirements = [
-    ]
+extras_require = {
+    'test': tests_require,
+    }
+description = """Functions used to convert CNX content to export formats."""
+
+if not IS_PY3:
+    tests_require.append('mock')
 
 setup(
     name='cnx-transforms',
-    version='1.0',
-    author="Connexions/Rhaptos Team",
-    author_email="info@cnx.org",
+    version='0.1',
+    author='Connexions team',
+    author_email='info@cnx.org',
+    url="https://github.com/connexions/cnx-transforms",
+    license='AGPL, See also LICENSE.txt',
     description=description,
-    long_description=open(README).read(),
-    url='https://github.com/connexions/cnx-transforms',
-    license='AGPL',  # See also LICENSE.txt
+    install_requires=install_requires,
+    tests_require=tests_require,
+    extras_require=extras_require,
+    test_suite='cnxtransforms.tests',
     packages=find_packages(),
     include_package_data=True,
-    install_requires=install_requirements,
-    extras_require={
-        'tests': test_requirements,
+    package_data={
+        'cnxtransforms': [],
         },
-    entry_points = """\
-    [console_scripts]
-    soffice2cnxml = cnxtransforms.cli:soffice2cnxml
-    word2soffice = cnxtransforms.cli:word2soffice
-    cnxml2html = cnxtransforms.cli:cnxml2html
+    entry_points="""\
     """,
     )
