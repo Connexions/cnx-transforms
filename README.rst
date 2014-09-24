@@ -30,6 +30,32 @@ Testing
 
     python setup.py test
 
+
+Developer Notes
+---------------
+
+This package is built on the ``celery`` message queuing framework with
+the assumption that it will be used by ``cnx-port``. It is kept as a separate
+package so that the web framework and other dependencies in ``cnx-port``
+will not be required when setting up this project on a separate machine
+from the machine running the web application.
+
+When developing new transform functions, keep in mind that they should be kept
+specific and minimal to the task at hand. For example, do not try to build
+a PDF creation task that also builds PDF previews. Why? Because you should
+be able to scale (limit or prioritize) the tasks. That is to say, build
+a separate function for each case.
+
+Manually testing a task
+~~~~~~~~~~~~~~~~~~~~~~~
+
+This package contains a module named ``main``, which houses the initialized
+Celery application. It can additionally be used to run a single task
+from the commandline. For example::
+
+    python -m cnxtransforms.main --broker amqp://guest@localhost \
+      cnxtransforms.tasks:make_pdf ../my-book.epub
+
 License
 -------
 
