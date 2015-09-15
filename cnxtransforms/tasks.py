@@ -16,16 +16,14 @@ __all__ = (
 @app.task
 def make_epub(epub, callback=None):
     """Creates a human readable EPUB (EPUB3/EPUB2) artifact."""
-    return []
-
+    raise NotImplementedError()
 
 @app.task
 def make_pdf(epub, callback=None):
     """Creates a PDF artifact."""
-    return []
-
+    raise NotImplementedError()
 
 @app.task
 def make_zip(epub, callback=None):
     """Creates a legacy zip artifact (a.k.a. complete or offline zip)."""
-    return []
+    raise NotImplementedError()
