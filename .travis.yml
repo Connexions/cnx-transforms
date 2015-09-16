@@ -1,0 +1,16 @@
+---
+# cnx-transforms
+language: python
+python:
+  - "3.4"
+before_install:
+  - pip install coverage
+  - pip install coveralls
+install:
+  - python setup.py install 
+script:
+  - coverage run --source=cnxtransforms setup.py test
+after_success:
+  - coveralls
+notifications:
+  email: false
