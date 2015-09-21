@@ -14,7 +14,6 @@ class MakeEpub(unittest.TestCase):
     def test_makeepub(self):
         epub = "cnxtransforms/tests/data/simultaneous-equations-1.1.epub"
         better_epub = self.target(epub, CALLBACK)
-        #zipped_epub = zipfile.ZipFile(epub, "r")
         
         
     

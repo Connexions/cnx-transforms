@@ -48,7 +48,6 @@ def make_epub(epub, callback=None):
     
         # content
         for (root, dirs, files) in os.walk('content'):
-            #content_files = files
             for file in files:
                 file_path = os.path.join(root, file)
                 epub.write(file_path)
@@ -62,36 +61,6 @@ def make_epub(epub, callback=None):
     # move this to it's final resting place
     # make sure temp data dir is removed, or the data that was created is removed?
     #shutil.copy(os.path.join(build_dir, output_file), output_dir)
-    
-    
-    '''
-    ## I think instead of this I need to unzip the other epub file, add css and remake the epub?
-    dir_path = 'tests/data/blank/'
-    output_path = 'test123.epub'
-
-    parent, dir = os.path.split(dir_path)
-    #import pdb; pdb.set_trace();
-    # nested function to prepare the proper archive path
-    def trimPath(path):
-        archive_path = path.replace(parent, "", 1)
-        archive_path = archive_path.replace(dir + os.path.sep, "/", 1)
-        import pdb;pdb.set_trace();
-        
-        return os.path.normcase(archive_path)
-        
-    ## build epub
-    epub = zipfile.ZipFile(output_path, "w")
-    
-    ## get and write mimetype file, it must be first
-    mimetype = open(os.path.join(dir_path, 'mimetype'))
-    print mimetype
-    
-    for (root, dirs, files) in os.walk(dir_path):
-        for file in files:
-            file_path = os.path.join(root, file)
-            epub.write(file_path, trimPath(file_path))
-    epub.close()  
-    '''
         
     return []
 
