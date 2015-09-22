@@ -36,32 +36,12 @@ def make_epub(epub, callback=None):
     with make_temp_directory() as build_dir:
         cnxepub.epub.unpack_epub(epub, build_dir)
             
-        # move into the temporary directory to work on the book
+        # move into the temporary directory to work on the book, here is where we can do things like add CSS...
         os.chdir(build_dir)
         
         
-        # here is where we will be modifying the contents (like adding CSS)
-        with zipfile.ZipFile(output_file, 'w') as epub:
-        
-            # add mimetype (must be first!)
-            with open("mimetype", "r") as mime:
-                epub.writestr("mimetype", mime.read().replace('\n', ''))
-        
-            # add META information
-            with open("META-INF/container.xml", "r") as meta:
-                epub.writestr("META-INF/container.xml", meta.read())
-        
-            # content
-            for (root, dirs, files) in os.walk('content'):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    epub.write(file_path)
-        
-            #resources
-            for (root, dirs, files) in os.walk('resources'):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    epub.write(file_path)
+        # repackage the book with the cnxepub library
+        cnxepub.epub.pack_epub(build_dir, output_file)
     
         # move this to it's final resting place or return it
         #shutil.copy(os.path.join(build_dir, output_file), output_dir)
