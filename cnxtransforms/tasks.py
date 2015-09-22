@@ -34,20 +34,11 @@ def make_epub(epub, callback=None):
     output_dir = ""
     
     with make_temp_directory() as build_dir:
-        # extract the existing book
-        with zipfile.ZipFile(epub, "r") as cnx_epub:
-            files = cnx_epub.namelist()
-            files_to_extract = [m for m in files]
-            #extract book into our temporary directory
-            cnx_epub.extractall(build_dir, files_to_extract)
+        cnxepub.epub.unpack_epub(epub, build_dir)
             
         # move into the temporary directory to work on the book
         os.chdir(build_dir)
         
-        ####
-        ##  Instad of this, use cnx-epub to generate the styled epub?
-        ####
-        #cnxepub.make_epub(epub, 'my-epub.epub')
         
         # here is where we will be modifying the contents (like adding CSS)
         with zipfile.ZipFile(output_file, 'w') as epub:
