@@ -45,7 +45,11 @@ class MakeEpub(unittest.TestCase):
         self.assertEqual(package.metadata, expected_metadata)
         
     def test_makestyledepub(self):
-        return 0
+        output_file = "my-epub.epub"
+        epub = os.path.join(
+            TEST_DATA_DIR, 'book',
+            "simultaneous-equations-1.1.epub")
+        styled_epub = self.target(epub, output_file, CALLBACK)
         
         
     
