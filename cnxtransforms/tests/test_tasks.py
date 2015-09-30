@@ -23,7 +23,10 @@ class MakeEpub(unittest.TestCase):
     def test_makestyledepub(self):
         #sample epub directory
         epub = os.path.join(TEST_DATA_DIR, 'book')
-        styled_epub = self.target(epub, CALLBACK)
+        output_path = self.target(epub, CALLBACK)
+        
+        self.assertEquals(os.path.join(TEST_DATA_DIR, '9b0903d2-13c4-4ebe-9ffe-1ee79db28482-1.6.epub'), output_path[0])
+        self.assertEquals(len(output_path), 1)
     
 
 class MakePDF(unittest.TestCase):
