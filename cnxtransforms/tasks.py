@@ -5,15 +5,15 @@
 # Public License version 3 (AGPLv3).
 # See LICENCE.txt for details.
 # ###
-import os
-import sys
-import subprocess
-import zipfile
-import tempfile
-import shutil
 import contextlib
+import os
+import shutil
+import subprocess
+import tempfile
 
 from cnxepub import EPUB
+
+from .main import app
 
 ####
 ## Test data directory for output, this will be changed in the future.
@@ -21,14 +21,12 @@ from cnxepub import EPUB
 here = os.path.abspath(os.path.dirname(__file__))
 TEST_DATA_DIR = os.path.join(here, 'tests/data')
 
-from .main import app
-
-
 __all__ = (
     'make_epub', 'make_pdf', 'make_zip',
     )   
     
-# Context manager to make temporary folders to work with files, magically removes it when used properly 
+# Context manager to make temporary folders to work with files, 
+# magically removes it when used properly 
 # (eg. with make_temp_directory() as dir:)
 @contextlib.contextmanager
 def make_temp_directory():
@@ -71,10 +69,6 @@ def make_styled_epub(epub, callback=None):
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                    cwd=build_dir)
         stdout, stderr = process.communicate()
-        
-        #if process.returncode != 0:
-            # Something went wrong...
-        #    raise RuntimeError("Something went wrong with the transform.")
     
         # Move the file to it's final destination.
         shutil.copy2(result_filepath, output_dir)
