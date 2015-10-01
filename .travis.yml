@@ -6,7 +6,7 @@ python:
 before_install:
   # Install cnx-epub
   - git clone https://github.com/Connexions/cnx-epub.git
-  - cd cnx-epub && sudo /usr/bin/python setup.py install && cd ..
+  - cd cnx-epub && sudo python setup.py install && cd ..
   # Scripts get installed to /usr/local/bin
   - pip install coverage
   - pip install coveralls
