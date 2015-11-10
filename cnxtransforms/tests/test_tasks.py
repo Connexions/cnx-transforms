@@ -25,8 +25,8 @@ class MakeEpub(unittest.TestCase):
         epub = os.path.join(TEST_DATA_DIR, 'book')
         output_path = self.target(epub, CALLBACK)
         
-        self.assertEquals(os.path.join(TEST_DATA_DIR, '9b0903d2-13c4-4ebe-9ffe-1ee79db28482-1.6.epub'), output_path[0])
-        self.assertEquals(len(output_path), 1)
+        self.assertEqual(os.path.join(TEST_DATA_DIR, '9b0903d2-13c4-4ebe-9ffe-1ee79db28482-1.6.epub'), output_path[0])
+        self.assertEqual(len(output_path), 1)
     
 
 class MakePDF(unittest.TestCase):
