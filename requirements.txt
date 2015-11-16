@@ -1,3 +1,5 @@
+git+https://github.com/Connexions/cnx-epub.git#egg=cnx-epub
+Celery
 setuptools>=17.1
 pbr
 --editable ./
