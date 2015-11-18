@@ -89,10 +89,10 @@ def make_pdf(epub, callback=None):
     - **pdf-generator** - Executable location for wkhtml2pdf or princexml.
     - **python** - Defines which python executable should be used.
     """
-    python_executable = settings.get('python', sys.executable)
-    oerexports_dir = settings['oer.exports-dir']
-    output_dir = settings['output-dir']
-    pdf_generator_executable = settings['pdf-generator']
+    python_executable = 'python'
+    oerexports_dir = "/home/vagrant/production/oer.exports"
+    output_dir = TEST_DATA_DIR
+    pdf_generator_executable = '/usr/bin/prince'
 
     # Create a temporary directory to work in...
     build_dir = tempfile.mkdtemp()
