@@ -34,9 +34,9 @@ Testing
 Developer Notes
 ---------------
 
-This package is built on the ``celery`` message queuing framework with
-the assumption that it will be used by ``cnx-port``. It is kept as a separate
-package so that the web framework and other dependencies in ``cnx-port``
+This package is built on the [Celery](celeryproject.org) message queuing framework with
+the assumption that it will be used by ``cnx-publishing-builds``. It is kept as a separate
+package so that the web framework and other dependencies in ``cnx-publishing-builds``
 will not be required when setting up this project on a separate machine
 from the machine running the web application.
 
